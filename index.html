@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="images/Picsart_25-09-01_01-47-47-668.png">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -583,13 +583,19 @@
     </div>
     
     <!-- Toast Notification -->
-    <div id="toast-notification" class="fixed bottom-0 right-0 m-8 p-4 rounded-lg shadow-lg bg-slate-800 text-white text-sm font-semibold opacity-0 transform translate-y-4 pointer-events-none">
+    <div id="toast-notification" class="fixed bottom-0 right-0 m-8 p-4 rounded-lg shadow-lg text-white text-sm font-semibold opacity-0 transform translate-y-4 pointer-events-none">
         Item claimed successfully!
     </div>
 
 
-<script>
-// --- STATE MANAGEMENT ---
+<script type="module">
+// --- SUPABASE & STATE MANAGEMENT ---
+const SUPABASE_URL = 'https://cswghahhhpcmxulwyxyc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzd2doYWhoaHBjbXh1bHd5eHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2ODAxMzAsImV4cCI6MjA3MjI1NjEzMH0.R-rSKNv79jiR-AC_1cU09GRkAtJ6PTFkrlwy8OoGMNY';
+
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const appState = {
     currentUser: null,
     isPremium: false,
@@ -650,26 +656,48 @@ function setupResponsiveHandlers() {
 
 
 // --- AUTHENTICATION ---
-function handleSignUp(email, password) {
-    console.log(`Signing up with email: ${email}`);
-    appState.currentUser = { email };
-    updateAuthUI();
-    closeModal('signUpModal');
+async function handleSignUp(email, password) {
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+        });
+        if (error) throw error;
+        showToast('Success! Please check your email to verify your account.');
+        closeModal('signUpModal');
+    } catch (error) {
+        console.error('Sign up error:', error.message);
+        showToast(`Error: ${error.message}`, 'error');
+    }
 }
 
-function handleLogIn(email, password) {
-    console.log(`Logging in with email: ${email}`);
-    appState.currentUser = { email };
-    updateAuthUI();
-    closeModal('logInModal');
+async function handleLogIn(email, password) {
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+        if (error) throw error;
+        closeModal('logInModal');
+    } catch (error) {
+        console.error('Log in error:', error.message);
+        showToast(`Error: ${error.message}`, 'error');
+    }
 }
 
-function handleLogOut() {
-    appState.currentUser = null;
-    appState.isPremium = false;
-    updateAuthUI();
-    updatePremiumUI();
+async function handleLogOut() {
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        appState.isPremium = false;
+        updatePremiumUI();
+        showToast("You've been logged out.");
+    } catch (error) {
+        console.error('Log out error:', error.message);
+        showToast(`Error: ${error.message}`, 'error');
+    }
 }
+
 
 // --- UI & RENDERING FUNCTIONS ---
 function updateAuthUI() {
@@ -723,7 +751,7 @@ function updatePremiumUI() {
     }
 }
 
-function switchTab(tabId) {
+window.switchTab = function(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     const activeTab = document.getElementById(tabId);
     if (activeTab) activeTab.classList.remove('hidden');
@@ -917,11 +945,9 @@ function claimMarketplaceItem(itemId) {
     if (itemIndex > -1) {
         const item = appState.marketplaceItems[itemIndex];
         
-        // Add to user's inventory
         const today = new Date().toISOString().split('T')[0];
         addItem(item.name, '1 unit (from marketplace)', today);
 
-        // Remove from marketplace
         appState.marketplaceItems.splice(itemIndex, 1);
         
         updateApp();
@@ -963,7 +989,7 @@ function undoDonation(itemId) {
     if (itemIndex > -1) {
         const [itemToReturn] = appState.donatedItems.splice(itemIndex, 1);
         appState.inventory.push(itemToReturn);
-        appState.inventory.sort((a,b) => b.id - a.id); // Keep it sorted
+        appState.inventory.sort((a,b) => b.id - a.id); 
         updateApp();
         showToast(`'${itemToReturn.name}' returned to inventory.`);
     }
@@ -989,14 +1015,14 @@ function getAiSuggestions() {
 
 
 // --- MODAL & NOTIFICATION HANDLING ---
-function openModal(modalId) {
+window.openModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('hidden');
         setTimeout(() => modal.classList.remove('opacity-0'), 10);
     }
 }
-function closeModal(modalId) {
+window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if(modal) {
         modal.classList.add('opacity-0');
@@ -1004,7 +1030,7 @@ function closeModal(modalId) {
     }
 }
 
-function openDirectionsModal(name, address, mapUrl) {
+window.openDirectionsModal = function(name, address, mapUrl) {
     document.getElementById('directions-title').textContent = `Directions to ${name}`;
     document.getElementById('directions-address').textContent = address;
     document.getElementById('directions-map').src = mapUrl;
@@ -1012,7 +1038,6 @@ function openDirectionsModal(name, address, mapUrl) {
     const openInMapsBtn = document.getElementById('open-in-maps-btn');
     openInMapsBtn.href = `https://www.google.com/maps?q=${encodeURIComponent(address)}`;
 
-    // Sample directions
     const directionsList = document.getElementById('directions-list');
     directionsList.innerHTML = `
         <li class="ml-4">
@@ -1039,7 +1064,7 @@ function openDirectionsModal(name, address, mapUrl) {
     openModal('directionsModal');
 }
 
-function openDropOffModal() {
+window.openDropOffModal = function() {
     const listContainer = document.getElementById('dropoff-locations-list');
     if (!listContainer) return;
     listContainer.innerHTML = '';
@@ -1064,7 +1089,7 @@ function openDropOffModal() {
     openModal('donationDropOffModal');
 }
 
-function openConfirmationModal(itemId, action) {
+window.openConfirmationModal = function(itemId, action) {
     const item = appState.inventory.find(i => i.id === itemId);
     if (!item) return;
 
@@ -1122,13 +1147,20 @@ function openConfirmationModal(itemId, action) {
 }
 
 
-function showToast(message) {
+function showToast(message, type = 'success') {
     const toast = document.getElementById('toast-notification');
     if (!toast) return;
 
     toast.textContent = message;
-    toast.classList.remove('opacity-0', 'translate-y-4');
+    toast.classList.remove('bg-slate-800', 'bg-red-600');
 
+    if (type === 'error') {
+        toast.classList.add('bg-red-600');
+    } else {
+        toast.classList.add('bg-slate-800');
+    }
+    
+    toast.classList.remove('opacity-0', 'translate-y-4');
     setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-4');
     }, 3000);
@@ -1194,26 +1226,17 @@ function setupFileUploadHandlers() {
 
     if (!dropZone || !browseBtn || !fileInput || !progressContainer || !scanModal) return;
 
-    // Trigger file input click when "Browse" is clicked
     browseBtn.addEventListener('click', () => fileInput.click());
-
-    // Handle file selection from input
     fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFile(e.target.files[0]);
-        }
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
-
-    // Drag and Drop listeners
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('border-green-500', 'bg-green-50');
     });
-
     dropZone.addEventListener('dragleave', () => {
         dropZone.classList.remove('border-green-500', 'bg-green-50');
     });
-
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('border-green-500', 'bg-green-50');
@@ -1225,22 +1248,18 @@ function setupFileUploadHandlers() {
 
     function handleFile(file) {
         progressContainer.classList.remove('hidden');
-        progressContainer.innerHTML = ''; // Clear previous uploads
-
-        const uploadEl = document.createElement('div');
-        uploadEl.className = 'w-full';
-        uploadEl.innerHTML = `
-            <div class="flex justify-between items-center mb-1">
-                <p class="text-sm font-medium text-slate-700 truncate max-w-xs">${file.name}</p>
-                <p class="text-sm font-medium text-slate-500" id="upload-percentage">0%</p>
+        progressContainer.innerHTML = `
+            <div class="w-full">
+                <div class="flex justify-between items-center mb-1">
+                    <p class="text-sm font-medium text-slate-700 truncate max-w-xs">${file.name}</p>
+                    <p class="text-sm font-medium text-slate-500" id="upload-percentage">0%</p>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="upload-status" class="text-xs text-slate-500 mt-1 text-right"></p>
             </div>
-            <div class="w-full bg-slate-200 rounded-full h-2">
-                <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-            <p id="upload-status" class="text-xs text-slate-500 mt-1 text-right"></p>
         `;
-        progressContainer.appendChild(uploadEl);
-        
         simulateUpload(file);
     }
 
@@ -1249,7 +1268,6 @@ function setupFileUploadHandlers() {
         const percentageText = document.getElementById('upload-percentage');
         const statusText = document.getElementById('upload-status');
         let progress = 0;
-
         statusText.textContent = 'Uploading...';
         
         const interval = setInterval(() => {
@@ -1260,7 +1278,6 @@ function setupFileUploadHandlers() {
                  clearInterval(interval);
                  return;
             }
-
             progressBar.style.width = `${progress}%`;
             percentageText.textContent = `${progress}%`;
 
@@ -1283,8 +1300,6 @@ function setupFileUploadHandlers() {
                         if (currentModal && !currentModal.classList.contains('hidden')) {
                             closeModal('scanReceiptModal');
                         }
-
-                        // Reset for next time
                         setTimeout(() => {
                             progressContainer.classList.add('hidden');
                             fileInput.value = '';
@@ -1321,18 +1336,18 @@ function setupEventListeners() {
         e.target.reset();
     });
 
-    document.getElementById('sign-up-form')?.addEventListener('submit', (e) => {
+    document.getElementById('sign-up-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = e.target.elements.email.value;
         const password = e.target.elements.password.value;
-        handleSignUp(email, password);
+        await handleSignUp(email, password);
     });
 
-    document.getElementById('log-in-form')?.addEventListener('submit', (e) => {
+    document.getElementById('log-in-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = e.target.elements.email.value;
         const password = e.target.elements.password.value;
-        handleLogIn(email, password);
+        await handleLogIn(email, password);
     });
 
     document.getElementById('upgrade-form')?.addEventListener('submit', (e) => {
@@ -1343,6 +1358,9 @@ function setupEventListeners() {
     });
 
     document.getElementById('find-dropoff-btn')?.addEventListener('click', openDropOffModal);
+    
+    // Make auth functions globally accessible for inline onclick handlers
+    window.handleLogOut = handleLogOut;
 }
 
 function initChart() {
@@ -1390,17 +1408,29 @@ function updateApp() {
     updatePremiumUI();
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+// Main App Initialization
+document.addEventListener('DOMContentLoaded', () => {
     setupResponsiveHandlers();
     setupEventListeners();
     setupTooltipHandlers();
     setupFileUploadHandlers();
+
     const purchaseDateEl = document.getElementById('purchase-date');
     if(purchaseDateEl) purchaseDateEl.valueAsDate = new Date();
+    
     initChart();
-    updateApp();
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+            appState.currentUser = session.user;
+        } else {
+            appState.currentUser = null;
+        }
+        updateApp();
+    });
 });
 
 </script>
 </body>
 </html>
+
