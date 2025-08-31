@@ -92,6 +92,17 @@
         .chart-container {
             height: 300px;
         }
+
+        #sidebar-tooltip-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #1e293b transparent transparent; /* Corresponds to bg-slate-800 */
+        }
     </style>
 </head>
 <body>
@@ -392,65 +403,10 @@
         </div>
     </div>
 
-    <!-- Log In Modal -->
-    <div id="logInModal" class="modal-backdrop hidden opacity-0">
-        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl m-4 relative">
-             <button type="button" onclick="closeModal('logInModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-            <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">Welcome Back!</h2>
-            <form id="log-in-form">
-                <div class="mb-4">
-                    <label for="login-email" class="block text-sm font-medium text-slate-600 mb-1">Email Address</label>
-                    <input type="email" id="login-email" name="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="you@example.com" value="test@example.com" required>
-                </div>
-                <div class="mb-6">
-                    <label for="login-password" class="block text-sm font-medium text-slate-600 mb-1">Password</label>
-                    <input type="password" id="login-password" name="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="••••••••" value="password" required>
-                </div>
-                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">Log In</button>
-                 <p class="text-center text-sm text-slate-500 mt-4">
-                    No account? <a href="#" onclick="closeModal('logInModal'); openModal('signUpModal');" class="font-semibold text-green-600 hover:underline">Sign Up</a>
-                </p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Upgrade to Premium Modal -->
-    <div id="upgradeModal" class="modal-backdrop hidden opacity-0">
-        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-2xl m-4 relative">
-             <button type="button" onclick="closeModal('upgradeModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-            <div class="text-center mb-6">
-                <div class="inline-block bg-green-100 p-3 rounded-full mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800">Unlock Premium Features</h2>
-                <p class="text-slate-500 mt-2">Get the most out of SustainaPlate for just $4.99/month.</p>
-            </div>
-            <ul class="space-y-3 mb-8 text-slate-600">
-                <li class="flex items-center gap-3">
-                    <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span>Advanced AI waste prediction and insights.</span>
-                </li>
-                <li class="flex items-center gap-3">
-                     <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span>Detailed analytics for restaurant inventory.</span>
-                </li>
-                <li class="flex items-center gap-3">
-                     <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span>Ad-free experience.</span>
-                </li>
-                 <li class="flex items-center gap-3">
-                     <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span>Priority support.</span>
-                </li>
-            </ul>
-            <form id="upgrade-form">
-                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">Upgrade for $4.99/month</button>
-                <button type="button" onclick="closeModal('upgradeModal')" class="w-full mt-3 text-slate-600 font-semibold py-2 px-6 rounded-lg hover:bg-slate-100 transition-colors">Maybe Later</button>
-            </form>
+    <!-- Sidebar Tooltip -->
+    <div id="sidebar-tooltip" class="fixed z-50 pointer-events-none transition-opacity duration-200 opacity-0" style="transform: translateY(-50%);">
+        <div id="sidebar-tooltip-content" class="relative bg-slate-800 text-white text-sm font-medium py-1.5 px-3 rounded-md">
+            <!-- Tooltip text is injected here -->
         </div>
     </div>
 
@@ -749,6 +705,50 @@ function closeModal(modalId) {
     }
 }
 
+// --- TOOLTIP HANDLING ---
+function setupTooltipHandlers() {
+    const sidebar = document.getElementById('sidebar');
+    const tooltip = document.getElementById('sidebar-tooltip');
+    const tooltipContent = document.getElementById('sidebar-tooltip-content');
+    if (!sidebar || !tooltip || !tooltipContent) return;
+
+    const tooltipItems = document.querySelectorAll(
+        '.nav-item, #auth-buttons button, #premium-ad-box, #sidebar-toggle-btn'
+    );
+
+    tooltipItems.forEach(item => {
+        item.addEventListener('mouseenter', (e) => {
+            if (!sidebar.classList.contains('collapsed')) return;
+
+            const target = e.currentTarget;
+            let text = '';
+            
+            if (target.id === 'sidebar-toggle-btn') {
+                text = 'Expand Sidebar';
+            } else if (target.id === 'premium-ad-box') {
+                text = appState.isPremium ? 'Premium Member' : 'Go Premium';
+            } else {
+                const textEl = target.querySelector('.nav-text');
+                if (textEl) text = textEl.textContent.trim();
+            }
+
+            if (!text) return;
+            
+            tooltipContent.textContent = text;
+            const targetRect = target.getBoundingClientRect();
+            
+            tooltip.style.top = `${targetRect.top + targetRect.height / 2}px`;
+            tooltip.style.left = `${targetRect.right + 12}px`;
+            
+            tooltip.classList.remove('opacity-0');
+        });
+
+        item.addEventListener('mouseleave', () => {
+            tooltip.classList.add('opacity-0');
+        });
+    });
+}
+
 
 // --- INITIALIZATION ---
 function setupEventListeners() {
@@ -830,6 +830,7 @@ function updateApp() {
 window.addEventListener('DOMContentLoaded', () => {
     setupResponsiveHandlers();
     setupEventListeners();
+    setupTooltipHandlers();
     const purchaseDateEl = document.getElementById('purchase-date');
     if(purchaseDateEl) purchaseDateEl.valueAsDate = new Date();
     initChart();
@@ -839,3 +840,4 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
