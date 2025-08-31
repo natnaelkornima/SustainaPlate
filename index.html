@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SustainaPlate - AI Food Waste Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Sidebar transitions */
+        #sidebar {
+            transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        /* Main content transitions */
+        #main-content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Styles for collapsed sidebar on desktop */
+        #sidebar.collapsed {
+            width: 88px;
+        }
+        #sidebar.collapsed .nav-text, 
+        #sidebar.collapsed .sidebar-header-text,
+        #sidebar.collapsed #premium-ad-box .nav-text,
+        #sidebar.collapsed #auth-buttons .nav-text,
+        #sidebar.collapsed #user-profile .nav-text {
+            display: none;
+        }
+        #sidebar.collapsed #premium-ad-box .hidden {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        #sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+        #sidebar.collapsed .nav-item,
+        #sidebar.collapsed #auth-buttons button {
+            justify-content: center;
+            padding: 0;
+            width: 48px;
+            height: 48px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #sidebar.collapsed #premium-ad-box {
+            padding: 0;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto;
+        }
+
+        #sidebar.collapsed .nav-item svg,
+        #sidebar.collapsed #auth-buttons button svg,
+        #sidebar.collapsed #premium-ad-box svg {
+            width: 24px;
+            height: 24px;
+        }
+       
+        #sidebar.collapsed #sidebar-toggle-btn {
+            width: 48px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #sidebar.collapsed #sidebar-toggle-btn svg {
+            transform: rotate(180deg);
+        }
+
+        /* Custom scrollbar */
+        .content::-webkit-scrollbar { width: 8px; }
+        .content::-webkit-scrollbar-track { background: #f1f5f9; }
+        .content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+        .chart-container {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="relative min-h-screen md:flex">
+        <!-- Mobile menu backdrop -->
+        <div id="mobile-menu-backdrop" class="fixed inset-0 bg-black/30 z-30 hidden md:hidden"></div>
+        
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="bg-white shadow-lg p-6 w-64 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-40 flex flex-col">
+            <div class="sidebar-header flex items-center gap-3 mb-10">
+                <div class="bg-green-500 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m4.24 1.42a2 2 0 0 1 0 2.82"></path></svg>
+                </div>
+                <h1 class="text-xl font-bold text-slate-800 sidebar-header-text">SustainaPlate</h1>
+            </div>
+            <nav class="flex-grow flex flex-col gap-4">
+                <a href="#" onclick="switchTab('dashboard')" class="nav-item flex items-center gap-3 px-4 py-2 text-slate-700 font-medium rounded-lg bg-green-100 text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="#" onclick="switchTab('inventory')" class="nav-item flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="M6 12h12"></path></svg>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="#" onclick="switchTab('marketplace')" class="nav-item flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                    <span class="nav-text">Marketplace</span>
+                </a>
+                 <a href="#" onclick="switchTab('donations')" class="nav-item flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span class="nav-text">Donations</span>
+                </a>
+            </nav>
+            <div class="mt-auto">
+                 <button id="sidebar-toggle-btn" class="hidden md:flex items-center justify-center w-full h-10 mb-4 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-slate-600 transition-transform"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+                 </button>
+                <div id="auth-buttons" class="mb-4 space-y-2">
+                    <button onclick="openModal('signUpModal')" class="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span class="nav-text">Sign Up</span>
+                    </button>
+                    <button onclick="openModal('logInModal')" class="w-full bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        <span class="nav-text">Log In</span>
+                    </button>
+                </div>
+                <div id="user-profile" class="hidden mb-4 p-3 bg-slate-100 rounded-lg">
+                     <p class="text-sm font-medium text-slate-700 truncate nav-text" id="user-email"></p>
+                     <button onclick="handleLogOut()" class="text-xs text-red-500 hover:underline font-semibold mt-1 nav-text">Log Out</button>
+                </div>
+                <div id="premium-ad-box" class="bg-green-600 text-white p-6 rounded-lg text-center">
+                    <div class="nav-text">
+                        <h3 class="font-bold text-lg">Go Premium!</h3>
+                        <p class="text-sm mt-2 mb-4">Get advanced AI insights and analytics for your restaurant.</p>
+                        <button onclick="openModal('upgradeModal')" class="bg-white text-green-600 font-semibold py-2 px-4 rounded-full w-full hover:bg-green-50 transition-colors">Upgrade Now</button>
+                    </div>
+                     <div class="hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0">
+             <!-- Top bar for mobile -->
+            <header class="md:hidden flex justify-between items-center bg-white p-4 shadow-md">
+                <button id="mobile-menu-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                 <div class="flex items-center gap-2">
+                    <div class="bg-green-500 p-2 rounded-lg">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m4.24 1.42a2 2 0 0 1 0 2.82"></path></svg>
+                    </div>
+                    <h1 class="text-lg font-bold text-slate-800">SustainaPlate</h1>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main id="main-content" class="content flex-grow p-4 sm:p-8 bg-slate-50">
+                <!-- Dashboard View -->
+                <div id="dashboard" class="tab-content">
+                    <header class="mb-8">
+                        <h1 id="dashboard-header" class="text-3xl font-bold text-slate-800">Welcome Back!</h1>
+                        <p class="text-slate-500 mt-1">Here's your food waste summary for this week.</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4">
+                            <div class="bg-green-100 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2H7v12h10z"></path><path d="M5 14H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-1"></path><path d="M9 18v-4h6v4"></path></svg></div>
+                            <div>
+                                <p class="text-slate-500 text-sm">Items in Inventory</p>
+                                <p id="dashboard-item-count" class="text-2xl font-bold text-slate-800">12</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4">
+                            <div class="bg-yellow-100 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1-2-2-2-2-4"/><path d="M15.5 14.5a2.5 2.5 0 0 1-2.5-2.5c0-1.38.5-2 1-3 1-2 2-2 2-4"/></svg></div>
+                            <div>
+                                <p class="text-slate-500 text-sm">Potential Waste (7d)</p>
+                                <p id="dashboard-waste-estimate" class="text-2xl font-bold text-slate-800">~8%</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4">
+                            <div class="bg-red-100 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M10 18h4"/><path d="M12 2v8"/></svg></div>
+                            <div>
+                                <p class="text-slate-500 text-sm">Wasted This Month</p>
+                                <p id="dashboard-waste-total" class="text-2xl font-bold text-slate-800">2.1 kg</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4">
+                            <div class="bg-blue-100 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                            <div>
+                                <p class="text-slate-500 text-sm">Money Saved</p>
+                                <p id="dashboard-money-saved" class="text-2xl font-bold text-slate-800">$45.50</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
+                            <h2 class="text-lg font-semibold text-slate-800 mb-4">Waste Analysis</h2>
+                            <div class="chart-container">
+                                <canvas id="wasteChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h2 class="text-lg font-semibold text-slate-800 mb-4">💡 AI Suggestions</h2>
+                            <div id="ai-suggestions" class="space-y-4">
+                                <!-- AI suggestions will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory View -->
+                <div id="inventory" class="tab-content hidden">
+                    <header class="flex flex-wrap justify-between items-center gap-4 mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-slate-800">Food Inventory</h1>
+                            <p class="text-slate-500 mt-1">Track your items to reduce waste.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="document.getElementById('receipt-upload').click()" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M4 12h1.6a2 2 0 0 1 2 1.1l1.4 2.3a2 2 0 0 0 2 1.1H12"/><path d="m18 22-2.5-2.5"/><path d="M15.5 22l-2.5-2.5"/></svg>
+                                Scan Receipt
+                            </button>
+                            <input type="file" id="receipt-upload" class="hidden" accept="image/*">
+                            <button onclick="openModal('addItemModal')" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Add Item
+                            </button>
+                        </div>
+                    </header>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-4 font-semibold text-slate-600">Item Name</th>
+                                        <th class="p-4 font-semibold text-slate-600 hidden sm:table-cell">Quantity</th>
+                                        <th class="p-4 font-semibold text-slate-600 hidden md:table-cell">Purchase Date</th>
+                                        <th class="p-4 font-semibold text-slate-600">Expires In</th>
+                                        <th class="p-4 font-semibold text-slate-600">Status</th>
+                                        <th class="p-4 font-semibold text-slate-600 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-table-body">
+                                    <!-- Inventory items will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace View -->
+                <div id="marketplace" class="tab-content hidden">
+                    <header class="mb-8">
+                        <h1 class="text-3xl font-bold text-slate-800">Community Marketplace</h1>
+                        <p class="text-slate-500 mt-1">Share surplus food with your neighbors.</p>
+                    </header>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
+                            <img src="https://placehold.co/400x300/a7f3d0/166534?text=Fresh+Lettuce" alt="Lettuce" class="w-full h-40 object-cover group-hover:scale-105 transition-transform">
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg text-slate-800">Fresh Lettuce Bundle</h3>
+                                <p class="text-sm text-slate-500">From: Alex P. (1.2 miles away)</p>
+                                <p class="text-sm text-slate-600 mt-2">I have too much lettuce from my garden! Free to a good home.</p>
+                                <button class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
+                            <img src="https://placehold.co/400x300/fde68a/854d0e?text=Sourdough+Starter" alt="Sourdough" class="w-full h-40 object-cover group-hover:scale-105 transition-transform">
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg text-slate-800">Sourdough Starter</h3>
+                                <p class="text-sm text-slate-500">From: Maria G. (2.5 miles away)</p>
+                                <p class="text-sm text-slate-600 mt-2">Active sourdough starter, "Doughseph". Needs feeding!</p>
+                                <button class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
+                            <img src="https://placehold.co/400x300/fecaca/991b1b?text=Tomatoes" alt="Tomatoes" class="w-full h-40 object-cover group-hover:scale-105 transition-transform">
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg text-slate-800">Vine-Ripened Tomatoes</h3>
+                                <p class="text-sm text-slate-500">From: Chef Rob's (3.1 miles away)</p>
+                                <p class="text-sm text-slate-600 mt-2">Restaurant surplus. Perfect for sauce. Approx 5 lbs available.</p>
+                                <button class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donations View -->
+                <div id="donations" class="tab-content hidden">
+                    <header class="mb-8">
+                        <h1 class="text-3xl font-bold text-slate-800">Local Donation Centers</h1>
+                        <p class="text-slate-500 mt-1">Connect with charities and food banks near you.</p>
+                    </header>
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">City Harvest Food Bank</h3>
+                                <p class="text-sm text-slate-500">123 Charity Lane, Anytown | (555) 123-4567</p>
+                                <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
+                                    <span class="font-semibold">Accepts:</span>
+                                    <span>Non-perishables, Fresh Produce</span>
+                                </div>
+                            </div>
+                            <button class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">Get Directions</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">Community Kitchen Collective</h3>
+                                <p class="text-sm text-slate-500">456 Giving St, Anytown | (555) 987-6543</p>
+                                <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
+                                    <span class="font-semibold">Accepts:</span>
+                                    <span>Prepared Meals, Dairy, Bread</span>
+                                </div>
+                            </div>
+                            <button class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">Get Directions</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal-backdrop hidden opacity-0">
+        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-2xl m-4 relative">
+             <button type="button" onclick="closeModal('addItemModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Add New Food Item</h2>
+            <form id="add-item-form">
+                <div class="mb-4">
+                    <label for="item-name" class="block text-sm font-medium text-slate-600 mb-1">Item Name</label>
+                    <input type="text" id="item-name" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., Apples" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                         <label for="item-quantity" class="block text-sm font-medium text-slate-600 mb-1">Quantity</label>
+                         <input type="text" id="item-quantity" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., 6 pcs" required>
+                    </div>
+                    <div>
+                        <label for="purchase-date" class="block text-sm font-medium text-slate-600 mb-1">Purchase Date</label>
+                        <input type="date" id="purchase-date" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" onclick="closeModal('addItemModal')" class="bg-slate-200 text-slate-700 font-semibold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors">Cancel</button>
+                    <button type="submit" class="bg-green-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition-colors">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Sign Up Modal -->
+    <div id="signUpModal" class="modal-backdrop hidden opacity-0">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl m-4 relative">
+            <button type="button" onclick="closeModal('signUpModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">Create Your Account</h2>
+            <form id="sign-up-form">
+                <div class="mb-4">
+                    <label for="signup-email" class="block text-sm font-medium text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="signup-email" name="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="you@example.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="signup-password" class="block text-sm font-medium text-slate-600 mb-1">Password</label>
+                    <input type="password" id="signup-password" name="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">Sign Up</button>
+                <p class="text-center text-sm text-slate-500 mt-4">
+                    Already have an account? <a href="#" onclick="closeModal('signUpModal'); openModal('logInModal');" class="font-semibold text-green-600 hover:underline">Log In</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Log In Modal -->
+    <div id="logInModal" class="modal-backdrop hidden opacity-0">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl m-4 relative">
+             <button type="button" onclick="closeModal('logInModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">Welcome Back!</h2>
+            <form id="log-in-form">
+                <div class="mb-4">
+                    <label for="login-email" class="block text-sm font-medium text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="login-email" name="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="you@example.com" value="test@example.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-sm font-medium text-slate-600 mb-1">Password</label>
+                    <input type="password" id="login-password" name="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="••••••••" value="password" required>
+                </div>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">Log In</button>
+                 <p class="text-center text-sm text-slate-500 mt-4">
+                    No account? <a href="#" onclick="closeModal('logInModal'); openModal('signUpModal');" class="font-semibold text-green-600 hover:underline">Sign Up</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upgrade to Premium Modal -->
+    <div id="upgradeModal" class="modal-backdrop hidden opacity-0">
+        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-2xl m-4 relative">
+             <button type="button" onclick="closeModal('upgradeModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div class="text-center mb-6">
+                <div class="inline-block bg-green-100 p-3 rounded-full mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Unlock Premium Features</h2>
+                <p class="text-slate-500 mt-2">Get the most out of SustainaPlate for just $4.99/month.</p>
+            </div>
+            <ul class="space-y-3 mb-8 text-slate-600">
+                <li class="flex items-center gap-3">
+                    <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span>Advanced AI waste prediction and insights.</span>
+                </li>
+                <li class="flex items-center gap-3">
+                     <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span>Detailed analytics for restaurant inventory.</span>
+                </li>
+                <li class="flex items-center gap-3">
+                     <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span>Ad-free experience.</span>
+                </li>
+                 <li class="flex items-center gap-3">
+                     <svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span>Priority support.</span>
+                </li>
+            </ul>
+            <form id="upgrade-form">
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">Upgrade for $4.99/month</button>
+                <button type="button" onclick="closeModal('upgradeModal')" class="w-full mt-3 text-slate-600 font-semibold py-2 px-6 rounded-lg hover:bg-slate-100 transition-colors">Maybe Later</button>
+            </form>
+        </div>
+    </div>
+
+
+<script>
+// --- STATE MANAGEMENT ---
+const appState = {
+    currentUser: null,
+    isPremium: false,
+    inventory: [
+        { id: 1, name: "Organic Bananas", quantity: "1 bunch", purchaseDate: "2025-08-28", status: "Fresh" },
+        { id: 2, name: "Chicken Breast", quantity: "2 lbs", purchaseDate: "2025-08-30", status: "Fresh" },
+        { id: 3, name: "Baby Spinach", quantity: "1 bag", purchaseDate: "2025-08-27", status: "Nearing Expiration" },
+        { id: 4, name: "Sourdough Bread", quantity: "1 loaf", purchaseDate: "2025-08-29", status: "Fresh" },
+        { id: 5, name: "Milk (2%)", quantity: "1/2 gallon", purchaseDate: "2025-08-25", status: "Expired" },
+    ],
+    wasteData: {
+        labels: ['Produce', 'Dairy', 'Meat', 'Grains', 'Other'],
+        data: [40, 15, 25, 10, 10]
+    },
+    nextId: 6,
+};
+
+const SHELF_LIFE = {
+    'default': 7, 'bananas': 5, 'chicken': 3, 'spinach': 6, 'bread': 5, 'milk': 7,
+    'apples': 14, 'tomatoes': 7, 'lettuce': 5, 'eggs': 21,
+};
+
+
+// --- SIDEBAR & RESPONSIVENESS ---
+function setupResponsiveHandlers() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('collapsed');
+    }
+
+    function toggleMobileMenu() {
+        sidebar.classList.toggle('-translate-x-full');
+        mobileMenuBackdrop.classList.toggle('hidden');
+    }
+
+    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+    if (mobileMenuBackdrop) mobileMenuBackdrop.addEventListener('click', toggleMobileMenu);
+}
+
+
+// --- AUTHENTICATION ---
+function handleSignUp(email, password) {
+    console.log(`Signing up with email: ${email}`);
+    appState.currentUser = { email };
+    updateAuthUI();
+    closeModal('signUpModal');
+}
+
+function handleLogIn(email, password) {
+    console.log(`Logging in with email: ${email}`);
+    appState.currentUser = { email };
+    updateAuthUI();
+    closeModal('logInModal');
+}
+
+function handleLogOut() {
+    appState.currentUser = null;
+    appState.isPremium = false;
+    updateAuthUI();
+    updatePremiumUI();
+}
+
+// --- UI & RENDERING FUNCTIONS ---
+function updateAuthUI() {
+    const authButtons = document.getElementById('auth-buttons');
+    const userProfile = document.getElementById('user-profile');
+    const userEmailEl = document.getElementById('user-email');
+    const dashboardHeader = document.getElementById('dashboard-header');
+
+    if (appState.currentUser) {
+        if(authButtons) authButtons.classList.add('hidden');
+        if(userProfile) userProfile.classList.remove('hidden');
+        if(userEmailEl) userEmailEl.textContent = appState.currentUser.email;
+        if(dashboardHeader) dashboardHeader.textContent = `Welcome, ${appState.currentUser.email.split('@')[0]}!`;
+    } else {
+        if(authButtons) authButtons.classList.remove('hidden');
+        if(userProfile) userProfile.classList.add('hidden');
+        if(userEmailEl) userEmailEl.textContent = '';
+        if(dashboardHeader) dashboardHeader.textContent = `Welcome Back!`;
+    }
+}
+
+function updatePremiumUI() {
+    const premiumAdBox = document.getElementById('premium-ad-box');
+    if (!premiumAdBox) return;
+
+    const textContent = premiumAdBox.querySelector('.nav-text');
+    const iconContent = premiumAdBox.querySelector('.hidden');
+    
+    if (appState.isPremium) {
+        if (textContent) {
+            textContent.innerHTML = `
+                <div class="flex items-center justify-center gap-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                     <h3 class="font-bold text-lg">Premium</h3>
+                </div>`;
+        }
+        if (iconContent) iconContent.classList.remove('hidden');
+        premiumAdBox.classList.remove('bg-green-600');
+        premiumAdBox.classList.add('bg-green-700');
+    } else {
+        if (textContent) {
+            textContent.innerHTML = `
+                <h3 class="font-bold text-lg">Go Premium!</h3>
+                <p class="text-sm mt-2 mb-4">Get advanced AI insights and analytics for your restaurant.</p>
+                <button onclick="openModal('upgradeModal')" class="bg-white text-green-600 font-semibold py-2 px-4 rounded-full w-full hover:bg-green-50 transition-colors">Upgrade Now</button>
+            `;
+        }
+        if (iconContent) iconContent.classList.add('hidden');
+        premiumAdBox.classList.add('bg-green-600');
+        premiumAdBox.classList.remove('bg-green-700');
+    }
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) activeTab.classList.remove('hidden');
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('bg-green-100', 'text-green-700');
+        item.classList.add('text-slate-600');
+    });
+
+    const activeNavItem = document.querySelector(`.nav-item[onclick="switchTab('${tabId}')"]`);
+    if (activeNavItem) {
+        activeNavItem.classList.add('bg-green-100', 'text-green-700');
+        activeNavItem.classList.remove('text-slate-600');
+    }
+
+    if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+        if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+            mobileMenuBackdrop.classList.add('hidden');
+        }
+    }
+}
+
+function renderInventory() {
+    const tableBody = document.getElementById('inventory-table-body');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+    
+    if (appState.inventory.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-500">Your inventory is empty. Add an item to get started!</td></tr>`;
+        return;
+    }
+
+    appState.inventory.forEach(item => {
+        const { daysLeft, statusColor, statusText } = calculateExpiration(item.purchaseDate, item.name);
+        item.status = statusText;
+
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-200 hover:bg-slate-50 transition-colors';
+        row.innerHTML = `
+            <td class="p-4 font-medium text-slate-800">${item.name}</td>
+            <td class="p-4 text-slate-600 hidden sm:table-cell">${item.quantity}</td>
+            <td class="p-4 text-slate-600 hidden md:table-cell">${new Date(item.purchaseDate + 'T00:00:00').toLocaleDateString()}</td>
+            <td class="p-4 text-slate-600">${daysLeft >= 0 ? `${daysLeft} days` : 'Expired'}</td>
+            <td class="p-4"><span class="px-3 py-1 text-xs font-semibold rounded-full ${statusColor}">${item.status}</span></td>
+            <td class="p-4 text-center">
+                <button onclick="logUsage(${item.id}, 'used')" class="text-green-600 hover:text-green-800 p-1" title="Mark as Used">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+                <button onclick="logUsage(${item.id}, 'wasted')" class="text-red-600 hover:text-red-800 p-1 ml-2" title="Mark as Wasted">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function renderDashboard() {
+    const itemCountEl = document.getElementById('dashboard-item-count');
+    const wasteEstimateEl = document.getElementById('dashboard-waste-estimate');
+    const wasteTotalEl = document.getElementById('dashboard-waste-total');
+    const moneySavedEl = document.getElementById('dashboard-money-saved');
+
+    if (itemCountEl) itemCountEl.textContent = appState.inventory.length;
+    if (wasteEstimateEl) wasteEstimateEl.textContent = `~${(appState.inventory.filter(i => i.status === 'Nearing Expiration').length / (appState.inventory.length || 1) * 15).toFixed(0)}%`;
+    if (wasteTotalEl) wasteTotalEl.textContent = `${(appState.wasteData.data.reduce((a,b) => a+b, 0) * 0.05).toFixed(1)} kg`;
+    if (moneySavedEl) moneySavedEl.textContent = `$${(appState.inventory.length * 3.5).toFixed(2)}`;
+    
+    renderAiSuggestions();
+}
+
+function renderAiSuggestions() {
+    const suggestionsContainer = document.getElementById('ai-suggestions');
+    if (!suggestionsContainer) return;
+
+    suggestionsContainer.innerHTML = '';
+    const suggestions = getAiSuggestions();
+
+    if (suggestions.length === 0) {
+        suggestionsContainer.innerHTML = `<p class="text-sm text-slate-500">No suggestions right now. Add more items to your inventory!</p>`;
+        return;
+    }
+
+    suggestions.forEach(suggestion => {
+        const suggestionEl = document.createElement('div');
+        suggestionEl.className = 'bg-slate-100 p-4 rounded-lg';
+        suggestionEl.innerHTML = `
+            <p class="font-semibold text-slate-700 text-sm">${suggestion.title}</p>
+            <p class="text-xs text-slate-500 mt-1">${suggestion.description}</p>
+        `;
+        suggestionsContainer.appendChild(suggestionEl);
+    });
+}
+
+
+// --- LOGIC & DATA FUNCTIONS ---
+function calculateExpiration(purchaseDateStr, itemName) { 
+    const purchaseDate = new Date(purchaseDateStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const nameKey = itemName.toLowerCase().split(' ')[0];
+    const life = SHELF_LIFE[nameKey] || SHELF_LIFE['default'];
+    const expiryDate = new Date(purchaseDate);
+    expiryDate.setDate(purchaseDate.getDate() + life);
+    const diffTime = expiryDate - today;
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    let statusColor, statusText;
+    if (daysLeft < 0) { statusColor = 'bg-red-100 text-red-700'; statusText = 'Expired';
+    } else if (daysLeft <= 2) { statusColor = 'bg-yellow-100 text-yellow-700'; statusText = 'Nearing Expiration';
+    } else { statusColor = 'bg-green-100 text-green-700'; statusText = 'Fresh'; }
+    return { daysLeft, statusColor, statusText };
+}
+
+function addItem(name, quantity, purchaseDate) {
+    const newItem = { id: appState.nextId++, name, quantity, purchaseDate, status: 'Fresh' };
+    appState.inventory.unshift(newItem);
+    updateApp();
+}
+
+let wasteChart;
+function logUsage(itemId, status) {
+    const itemIndex = appState.inventory.findIndex(item => item.id === itemId);
+    if (itemIndex > -1) {
+        if (status === 'wasted' && wasteChart) {
+            const categoryIndex = Math.floor(Math.random() * appState.wasteData.labels.length);
+            appState.wasteData.data[categoryIndex] += 5;
+            wasteChart.data.datasets[0].data = appState.wasteData.data;
+            wasteChart.update();
+        }
+        appState.inventory.splice(itemIndex, 1);
+        updateApp();
+    }
+}
+
+function getAiSuggestions() {
+    const suggestions = [];
+    const inventoryNames = appState.inventory.map(i => i.name.toLowerCase());
+    if (inventoryNames.includes('chicken breast') && inventoryNames.includes('baby spinach')) {
+        suggestions.push({ title: "Meal Idea: Chicken & Spinach", description: "Your chicken and spinach are fresh. Try making a stir-fry or a salad tonight!" });
+    }
+    const expiringSoon = appState.inventory.find(item => item.status === 'Nearing Expiration');
+    if (expiringSoon) {
+        suggestions.push({ title: `Use Soon: ${expiringSoon.name}`, description: `Your ${expiringSoon.name.toLowerCase()} is nearing its expiration. Plan to use it.` });
+    }
+    const ripeBananas = appState.inventory.find(i => i.name.toLowerCase().includes('banana') && i.status === 'Nearing Expiration');
+    if (ripeBananas) {
+        suggestions.push({ title: "Recipe: Banana Bread", description: "Your bananas are getting ripe! Perfect for making delicious banana bread." });
+    }
+    return suggestions.slice(0, 3);
+}
+
+
+// --- MODAL & NOTIFICATION HANDLING ---
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+}
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if(modal) {
+        modal.classList.add('opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+}
+
+
+// --- INITIALIZATION ---
+function setupEventListeners() {
+    document.getElementById('add-item-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('item-name').value;
+        const quantity = document.getElementById('item-quantity').value;
+        let purchaseDate = document.getElementById('purchase-date').value;
+        if (!purchaseDate) {
+            purchaseDate = new Date().toISOString().split('T')[0];
+        }
+        addItem(name, quantity, purchaseDate);
+        e.target.reset();
+        document.getElementById('purchase-date').value = new Date().toISOString().split('T')[0];
+        closeModal('addItemModal');
+    });
+
+    document.getElementById('sign-up-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = e.target.elements.email.value;
+        const password = e.target.elements.password.value;
+        handleSignUp(email, password);
+    });
+
+    document.getElementById('log-in-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = e.target.elements.email.value;
+        const password = e.target.elements.password.value;
+        handleLogIn(email, password);
+    });
+
+    document.getElementById('upgrade-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        appState.isPremium = true;
+        updatePremiumUI();
+        closeModal('upgradeModal');
+    });
+
+
+
+    document.getElementById('receipt-upload')?.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            console.log(`Receipt "${e.target.files[0].name}" uploaded!`);
+        }
+    });
+}
+
+function initChart() {
+    const ctx = document.getElementById('wasteChart')?.getContext('2d');
+    if (!ctx) return;
+    wasteChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: appState.wasteData.labels,
+            datasets: [{
+                label: 'Waste by Category',
+                data: appState.wasteData.data,
+                backgroundColor: ['#34d399', '#facc15', '#f87171', '#fb923c', '#94a3b8'],
+                borderColor: '#ffffff',
+                borderWidth: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right' }, title: { display: false } },
+            cutout: '70%'
+        }
+    });
+}
+
+function updateApp() {
+    renderInventory();
+    renderDashboard();
+    updateAuthUI();
+    updatePremiumUI();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    setupResponsiveHandlers();
+    setupEventListeners();
+    const purchaseDateEl = document.getElementById('purchase-date');
+    if(purchaseDateEl) purchaseDateEl.valueAsDate = new Date();
+    initChart();
+    updateApp();
+});
+
+</script>
+</body>
+</html>
