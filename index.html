@@ -299,31 +299,42 @@
                 <!-- Donations View -->
                 <div id="donations" class="tab-content hidden">
                     <header class="mb-8">
-                        <h1 class="text-3xl font-bold text-slate-800">Local Donation Centers</h1>
-                        <p class="text-slate-500 mt-1">Connect with charities and food banks near you.</p>
+                        <h1 class="text-3xl font-bold text-slate-800">Donations</h1>
+                        <p class="text-slate-500 mt-1">Manage items to donate and find local centers.</p>
                     </header>
-                    <div class="space-y-6">
-                        <div class="bg-white p-6 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Selam Food Bank</h3>
-                                <p class="text-sm text-slate-500">Meskel Square, Addis Ababa | (011) 123-4567</p>
-                                <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
-                                    <span class="font-semibold">Accepts:</span>
-                                    <span>Non-perishables, Fresh Produce</span>
-                                </div>
-                            </div>
-                            <button onclick="openDirectionsModal('Selam Food Bank', 'Meskel Square, Addis Ababa', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.733562035244!2d38.7628203153578!3d9.00033899144315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85954536c64b%3A0x238515b345717364!2sMeskel%20Square!5e0!3m2!1sen!2set!4v1661895692345!5m2!1sen!2set')" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">Get Directions</button>
+                    
+                    <div class="mb-10">
+                        <h2 class="text-xl font-semibold text-slate-700 mb-4">Your Donation Basket</h2>
+                        <div id="donated-items-list" class="space-y-4">
+                             <!-- Donated items will be injected here -->
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Unity Community Kitchen</h3>
-                                <p class="text-sm text-slate-500">Bole Medhane Alem, Addis Ababa | (011) 987-6543</p>
-                                <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
-                                    <span class="font-semibold">Accepts:</span>
-                                    <span>Prepared Meals, Dairy, Bread</span>
+                    </div>
+
+                    <div>
+                         <h2 class="text-xl font-semibold text-slate-700 mb-4">Local Donation Centers</h2>
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-800">Selam Food Bank</h3>
+                                    <p class="text-sm text-slate-500">Meskel Square, Addis Ababa | (011) 123-4567</p>
+                                    <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
+                                        <span class="font-semibold">Accepts:</span>
+                                        <span>Non-perishables, Fresh Produce</span>
+                                    </div>
                                 </div>
+                                <button onclick="openDirectionsModal('Selam Food Bank', 'Meskel Square, Addis Ababa', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.733562035244!2d38.7628203153578!3d9.00033899144315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85954536c64b%3A0x238515b345717364!2sMeskel%20Square!5e0!3m2!1sen!2set!4v1661895692345!5m2!1sen!2set')" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">Get Directions</button>
                             </div>
-                            <button onclick="openDirectionsModal('Unity Community Kitchen', 'Bole Medhane Alem, Addis Ababa', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15763.637152631744!2d38.78918092723795!3d9.00845318181858!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85f3ab245237%3A0x33b3283287661195!2sMedhane%20Alem%20Cathedral!5e0!3m2!1sen!2set!4v1661895828236!5m2!1sen!2set')" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">Get Directions</button>
+                            <div class="bg-white p-6 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-800">Unity Community Kitchen</h3>
+                                    <p class="text-sm text-slate-500">Bole Medhane Alem, Addis Ababa | (011) 987-6543</p>
+                                    <div class="flex items-center gap-2 mt-2 text-sm text-slate-600">
+                                        <span class="font-semibold">Accepts:</span>
+                                        <span>Prepared Meals, Dairy, Bread</span>
+                                    </div>
+                                </div>
+                                <button onclick="openDirectionsModal('Unity Community Kitchen', 'Bole Medhane Alem, Addis Ababa', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15763.637152631744!2d38.78918092723795!3d9.00845318181858!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85f3ab245237%3A0x33b3283287661195!2sMedhane%20Alem%20Cathedral!5e0!3m2!1sen!2set!4v1661895828236!5m2!1sen!2set')" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">Get Directions</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -560,6 +571,7 @@ const appState = {
         { id: 102, name: "Sourdough Starter", from: "Maria G. (2.5 miles away)", description: "Active sourdough starter, \"Doughseph\". Needs feeding!", imageUrl: "https://placehold.co/400x300/fde68a/854d0e?text=Sourdough+Starter" },
         { id: 103, name: "Vine-Ripened Tomatoes", from: "Chef Rob's (3.1 miles away)", description: "Restaurant surplus. Perfect for sauce. Approx 5 lbs available.", imageUrl: "https://placehold.co/400x300/fecaca/991b1b?text=Tomatoes" },
     ],
+    donatedItems: [],
     wasteData: {
         labels: ['Produce', 'Dairy', 'Meat', 'Grains', 'Other'],
         data: [40, 15, 25, 10, 10]
@@ -723,6 +735,9 @@ function renderInventory() {
                 <button onclick="openConfirmationModal(${item.id}, 'used')" class="text-green-600 hover:text-green-800 p-1" title="Mark as Used">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </button>
+                <button onclick="openConfirmationModal(${item.id}, 'donate')" class="text-blue-600 hover:text-blue-800 p-1 ml-2" title="Donate Item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                </button>
                 <button onclick="openConfirmationModal(${item.id}, 'wasted')" class="text-red-600 hover:text-red-800 p-1 ml-2" title="Mark as Wasted">
                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
@@ -792,6 +807,32 @@ function renderAiSuggestions() {
             <p class="text-xs text-slate-500 mt-1">${suggestion.description}</p>
         `;
         suggestionsContainer.appendChild(suggestionEl);
+    });
+}
+
+function renderDonatedItems() {
+    const container = document.getElementById('donated-items-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (appState.donatedItems.length === 0) {
+        container.innerHTML = `<div class="text-center p-6 bg-slate-100 rounded-lg"><p class="text-slate-500">Your donation basket is empty. Add items from your inventory to donate them.</p></div>`;
+        return;
+    }
+
+    appState.donatedItems.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = "bg-white p-4 rounded-lg shadow-sm flex items-center justify-between";
+        itemEl.innerHTML = `
+            <div>
+                <p class="font-semibold text-slate-800">${item.name}</p>
+                <p class="text-sm text-slate-500">${item.quantity}</p>
+            </div>
+            <button onclick="undoDonation(${item.id})" class="text-slate-500 hover:text-red-600 transition-colors" title="Remove from donations">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        `;
+        container.appendChild(itemEl);
     });
 }
 
@@ -865,6 +906,28 @@ function logUsage(itemId, status) {
         showToast(`'${item.name}' marked as ${status}.`);
     }
 }
+
+function donateItem(itemId) {
+    const itemIndex = appState.inventory.findIndex(item => item.id === itemId);
+    if (itemIndex > -1) {
+        const [itemToDonate] = appState.inventory.splice(itemIndex, 1);
+        appState.donatedItems.push(itemToDonate);
+        updateApp();
+        showToast(`'${itemToDonate.name}' added to your donation basket.`);
+    }
+}
+
+function undoDonation(itemId) {
+    const itemIndex = appState.donatedItems.findIndex(item => item.id === itemId);
+    if (itemIndex > -1) {
+        const [itemToReturn] = appState.donatedItems.splice(itemIndex, 1);
+        appState.inventory.push(itemToReturn);
+        appState.inventory.sort((a,b) => b.id - a.id); // Keep it sorted
+        updateApp();
+        showToast(`'${itemToReturn.name}' returned to inventory.`);
+    }
+}
+
 
 function getAiSuggestions() {
     const suggestions = [];
@@ -944,21 +1007,48 @@ function openConfirmationModal(itemId, action) {
     const modalIconContainer = document.getElementById('confirmation-icon-container');
     const confirmBtn = document.getElementById('confirmation-confirm-btn');
 
-    const isWasted = action === 'wasted';
+    let config;
+
+    switch (action) {
+        case 'used':
+            config = {
+                message: `Are you sure you want to mark '${item.name}' as used?`,
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M20 6 9 17l-5-5"/></svg>`,
+                iconBg: 'bg-green-100',
+                btnBg: 'bg-green-500 hover:bg-green-600',
+                callback: () => logUsage(itemId, 'used')
+            };
+            break;
+        case 'wasted':
+            config = {
+                message: `Are you sure you want to mark '${item.name}' as wasted?`,
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+                iconBg: 'bg-red-100',
+                btnBg: 'bg-red-500 hover:bg-red-600',
+                callback: () => logUsage(itemId, 'wasted')
+            };
+            break;
+        case 'donate':
+             config = {
+                message: `Are you sure you want to add '${item.name}' to your donation basket?`,
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>`,
+                iconBg: 'bg-blue-100',
+                btnBg: 'bg-blue-500 hover:bg-blue-600',
+                callback: () => donateItem(itemId)
+            };
+            break;
+        default:
+             return;
+    }
     
     modalTitle.textContent = `Confirm Action`;
-    modalMessage.textContent = `Are you sure you want to mark '${item.name}' as ${action}?`;
-    
-    modalIconContainer.innerHTML = isWasted 
-        ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
-        : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M20 6 9 17l-5-5"/></svg>`;
-    
-    modalIconContainer.className = `mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${isWasted ? 'bg-red-100' : 'bg-green-100'}`;
-    
-    confirmBtn.className = `text-white font-semibold py-2 px-6 rounded-lg transition-colors ${isWasted ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`;
+    modalMessage.textContent = config.message;
+    modalIconContainer.innerHTML = config.icon;
+    modalIconContainer.className = `mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${config.iconBg}`;
+    confirmBtn.className = `text-white font-semibold py-2 px-6 rounded-lg transition-colors ${config.btnBg}`;
     
     confirmBtn.onclick = () => {
-        logUsage(itemId, action);
+        config.callback();
         closeModal('confirmationModal');
     };
     
@@ -1227,6 +1317,7 @@ function updateApp() {
     renderInventory();
     renderDashboard();
     renderMarketplace();
+    renderDonatedItems();
     updateAuthUI();
     updatePremiumUI();
 }
