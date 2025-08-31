@@ -103,6 +103,9 @@
             border-style: solid;
             border-color: transparent #1e293b transparent transparent; /* Corresponds to bg-slate-800 */
         }
+         #toast-notification {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -278,38 +281,18 @@
 
                 <!-- Marketplace View -->
                 <div id="marketplace" class="tab-content hidden">
-                    <header class="mb-8">
-                        <h1 class="text-3xl font-bold text-slate-800">Community Marketplace</h1>
-                        <p class="text-slate-500 mt-1">Share surplus food with your neighbors.</p>
+                    <header class="flex flex-wrap justify-between items-center gap-4 mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-slate-800">Community Marketplace</h1>
+                            <p class="text-slate-500 mt-1">Share surplus food with your neighbors.</p>
+                        </div>
+                        <button onclick="openModal('shareFoodModal')" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            Share Food
+                        </button>
                     </header>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
-                            <img src="https://placehold.co/400x300/a7f3d0/166534?text=Fresh+Lettuce" alt="Lettuce" class="w-full h-40 object-cover group-hover:scale-105 transition-transform">
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg text-slate-800">Fresh Lettuce Bundle</h3>
-                                <p class="text-sm text-slate-500">From: Alex P. (1.2 miles away)</p>
-                                <p class="text-sm text-slate-600 mt-2">I have too much lettuce from my garden! Free to a good home.</p>
-                                <button class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
-                            <img src="https://placehold.co/400x300/fde68a/854d0e?text=Sourdough+Starter" alt="Sourdough" class="w-full h-40 object-cover group-hover:scale-105 transition-transform">
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg text-slate-800">Sourdough Starter</h3>
-                                <p class="text-sm text-slate-500">From: Maria G. (2.5 miles away)</p>
-                                <p class="text-sm text-slate-600 mt-2">Active sourdough starter, "Doughseph". Needs feeding!</p>
-                                <button class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
-                            <img src="https://placehold.co/400x300/fecaca/991b1b?text=Tomatoes" alt="Tomatoes" class="w-full h-40 object-cover group-hover:scale-105 transition-transform">
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg text-slate-800">Vine-Ripened Tomatoes</h3>
-                                <p class="text-sm text-slate-500">From: Chef Rob's (3.1 miles away)</p>
-                                <p class="text-sm text-slate-600 mt-2">Restaurant surplus. Perfect for sauce. Approx 5 lbs available.</p>
-                                <button class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
-                            </div>
-                        </div>
+                    <div id="marketplace-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- Marketplace items will be injected here -->
                     </div>
                 </div>
 
@@ -355,6 +338,8 @@
         </div>
     </div>
     
+    <!-- Modals Container -->
+
     <!-- Scan Receipt Modal -->
     <div id="scanReceiptModal" class="modal-backdrop hidden opacity-0">
         <div class="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl m-4 relative">
@@ -372,11 +357,7 @@
                     <button type="button" id="browse-files-btn" class="mt-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors pointer-events-auto">Browse Files</button>
                 </div>
             </div>
-
-            <div id="upload-progress-container" class="mt-6 hidden">
-                <!-- Progress bars will be injected here -->
-            </div>
-
+            <div id="upload-progress-container" class="mt-6 hidden"></div>
             <input type="file" id="receipt-upload-input" class="hidden" accept="image/jpeg, image/png, image/webp">
         </div>
     </div>
@@ -411,6 +392,34 @@
         </div>
     </div>
     
+    <!-- Share Food Modal -->
+    <div id="shareFoodModal" class="modal-backdrop hidden opacity-0">
+        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-2xl m-4 relative">
+             <button type="button" onclick="closeModal('shareFoodModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Share Surplus Food</h2>
+            <form id="share-food-form">
+                <div class="mb-4">
+                    <label for="share-item-name" class="block text-sm font-medium text-slate-600 mb-1">Item Name</label>
+                    <input type="text" id="share-item-name" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., Fresh Lettuce Bundle" required>
+                </div>
+                 <div class="mb-4">
+                    <label for="share-item-desc" class="block text-sm font-medium text-slate-600 mb-1">Description</label>
+                    <textarea id="share-item-desc" rows="3" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., I have too much from my garden!" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="share-image-url" class="block text-sm font-medium text-slate-600 mb-1">Image URL (Optional)</label>
+                    <input type="text" id="share-image-url" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="https://placehold.co/...">
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" onclick="closeModal('shareFoodModal')" class="bg-slate-200 text-slate-700 font-semibold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors">Cancel</button>
+                    <button type="submit" class="bg-green-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition-colors">Share Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Sign Up Modal -->
     <div id="signUpModal" class="modal-backdrop hidden opacity-0">
         <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl m-4 relative">
@@ -480,12 +489,16 @@
         </div>
     </div>
 
-
     <!-- Sidebar Tooltip -->
     <div id="sidebar-tooltip" class="fixed z-50 pointer-events-none transition-opacity duration-200 opacity-0" style="transform: translateY(-50%);">
         <div id="sidebar-tooltip-content" class="relative bg-slate-800 text-white text-sm font-medium py-1.5 px-3 rounded-md">
             <!-- Tooltip text is injected here -->
         </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="fixed bottom-0 right-0 m-8 p-4 rounded-lg shadow-lg bg-slate-800 text-white text-sm font-semibold opacity-0 transform translate-y-4 pointer-events-none">
+        Item claimed successfully!
     </div>
 
 
@@ -501,11 +514,17 @@ const appState = {
         { id: 4, name: "Sourdough Bread", quantity: "1 loaf", purchaseDate: "2025-08-29", status: "Fresh" },
         { id: 5, name: "Milk (2%)", quantity: "1/2 gallon", purchaseDate: "2025-08-25", status: "Expired" },
     ],
+    marketplaceItems: [
+        { id: 101, name: "Fresh Lettuce Bundle", from: "Alex P. (1.2 miles away)", description: "I have too much lettuce from my garden! Free to a good home.", imageUrl: "https://placehold.co/400x300/a7f3d0/166534?text=Fresh+Lettuce" },
+        { id: 102, name: "Sourdough Starter", from: "Maria G. (2.5 miles away)", description: "Active sourdough starter, \"Doughseph\". Needs feeding!", imageUrl: "https://placehold.co/400x300/fde68a/854d0e?text=Sourdough+Starter" },
+        { id: 103, name: "Vine-Ripened Tomatoes", from: "Chef Rob's (3.1 miles away)", description: "Restaurant surplus. Perfect for sauce. Approx 5 lbs available.", imageUrl: "https://placehold.co/400x300/fecaca/991b1b?text=Tomatoes" },
+    ],
     wasteData: {
         labels: ['Produce', 'Dairy', 'Meat', 'Grains', 'Other'],
         data: [40, 15, 25, 10, 10]
     },
     nextId: 6,
+    nextMarketplaceId: 104,
 };
 
 const SHELF_LIFE = {
@@ -672,6 +691,32 @@ function renderInventory() {
     });
 }
 
+function renderMarketplace() {
+    const grid = document.getElementById('marketplace-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (appState.marketplaceItems.length === 0) {
+        grid.innerHTML = `<p class="text-slate-500 col-span-full text-center">The marketplace is empty. Why not share something?</p>`;
+        return;
+    }
+
+    appState.marketplaceItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl shadow-sm overflow-hidden group";
+        card.innerHTML = `
+            <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform" onerror="this.onerror=null;this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Image+Not+Found';">
+            <div class="p-4">
+                <h3 class="font-bold text-lg text-slate-800">${item.name}</h3>
+                <p class="text-sm text-slate-500">From: ${item.from}</p>
+                <p class="text-sm text-slate-600 mt-2">${item.description}</p>
+                <button onclick="claimMarketplaceItem(${item.id})" class="w-full mt-4 bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition-colors">Claim Item</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
 function renderDashboard() {
     const itemCountEl = document.getElementById('dashboard-item-count');
     const wasteEstimateEl = document.getElementById('dashboard-waste-estimate');
@@ -734,6 +779,35 @@ function addItem(name, quantity, purchaseDate) {
     updateApp();
 }
 
+function addMarketplaceItem(name, description, imageUrl) {
+    const newItem = {
+        id: appState.nextMarketplaceId++,
+        name,
+        description,
+        imageUrl: imageUrl || `https://placehold.co/400x300/e2e8f0/64748b?text=${name.replace(/\s/g,'+')}`,
+        from: appState.currentUser ? appState.currentUser.email.split('@')[0] : "Anonymous User"
+    };
+    appState.marketplaceItems.unshift(newItem);
+    updateApp();
+}
+
+function claimMarketplaceItem(itemId) {
+    const itemIndex = appState.marketplaceItems.findIndex(item => item.id === itemId);
+    if (itemIndex > -1) {
+        const item = appState.marketplaceItems[itemIndex];
+        
+        // Add to user's inventory
+        const today = new Date().toISOString().split('T')[0];
+        addItem(item.name, '1 unit (from marketplace)', today);
+
+        // Remove from marketplace
+        appState.marketplaceItems.splice(itemIndex, 1);
+        
+        updateApp();
+        showToast(`'${item.name}' claimed and added to your inventory!`);
+    }
+}
+
 let wasteChart;
 function logUsage(itemId, status) {
     const itemIndex = appState.inventory.findIndex(item => item.id === itemId);
@@ -782,6 +856,19 @@ function closeModal(modalId) {
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
 }
+
+function showToast(message) {
+    const toast = document.getElementById('toast-notification');
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.classList.remove('opacity-0', 'translate-y-4');
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+    }, 3000);
+}
+
 
 // --- TOOLTIP HANDLING ---
 function setupTooltipHandlers() {
@@ -958,6 +1045,16 @@ function setupEventListeners() {
         e.target.reset();
         document.getElementById('purchase-date').valueAsDate = new Date();
     });
+    
+    document.getElementById('share-food-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = e.target.elements['share-item-name'].value;
+        const description = e.target.elements['share-item-desc'].value;
+        const imageUrl = e.target.elements['share-image-url'].value;
+        addMarketplaceItem(name, description, imageUrl);
+        closeModal('shareFoodModal');
+        e.target.reset();
+    });
 
     document.getElementById('sign-up-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -1020,6 +1117,7 @@ function initChart() {
 function updateApp() {
     renderInventory();
     renderDashboard();
+    renderMarketplace();
     updateAuthUI();
     updatePremiumUI();
 }
