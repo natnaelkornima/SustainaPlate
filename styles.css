@@ -1,0 +1,101 @@
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+}
+/* Sidebar transitions */
+#sidebar {
+    transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+/* Main content transitions */
+#main-content {
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* Styles for collapsed sidebar on desktop */
+#sidebar.collapsed {
+    width: 88px;
+}
+#sidebar.collapsed .nav-text, 
+#sidebar.collapsed .sidebar-header-text,
+#sidebar.collapsed #premium-ad-box .nav-text,
+#sidebar.collapsed #auth-buttons .nav-text,
+#sidebar.collapsed #user-profile .nav-text {
+    display: none;
+}
+#sidebar.collapsed #user-profile .flex-shrink-0 {
+    margin: 0 auto;
+}
+#sidebar.collapsed #premium-ad-box .hidden {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+#sidebar.collapsed .sidebar-header {
+    justify-content: center;
+}
+#sidebar.collapsed .nav-item,
+#sidebar.collapsed #auth-buttons button {
+    justify-content: center;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#sidebar.collapsed #premium-ad-box {
+    padding: 0;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+}
+
+#sidebar.collapsed .nav-item svg,
+#sidebar.collapsed #auth-buttons button svg,
+#sidebar.collapsed #premium-ad-box svg {
+    width: 24px;
+    height: 24px;
+}
+
+#sidebar.collapsed #sidebar-toggle-btn {
+    width: 48px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#sidebar.collapsed #sidebar-toggle-btn svg {
+    transform: rotate(180deg);
+}
+
+/* Custom scrollbar */
+.content::-webkit-scrollbar { width: 8px; }
+.content::-webkit-scrollbar-track { background: #f1f5f9; }
+.content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.modal-backdrop {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 50;
+    transition: opacity 0.3s ease;
+}
+.chart-container {
+    height: 300px;
+}
+
+#sidebar-tooltip-content::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #1e293b transparent transparent; /* Corresponds to bg-slate-800 */
+}
+#toast-notification {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
