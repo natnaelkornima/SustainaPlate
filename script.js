@@ -1,4 +1,3 @@
-
 // --- SUPABASE & STATE MANAGEMENT ---
 const SUPABASE_URL = 'https://cswghahhhpcmxulwyxyc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzd2doYWhoaHBjbXh1bHd5eHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2ODAxMzAsImV4cCI6MjA3MjI1NjEzMH0.R-rSKNv79jiR-AC_1cU09GRkAtJ6PTFkrlwy8OoGMNY';
@@ -72,7 +71,16 @@ async function handleSignUp(email, password, fullName, avatarFile) {
             email: email,
             password: password,
         });
-        if (authError) throw authError;
+
+        if (authError) {
+             if (authError.message.includes("User already registered")) {
+                closeModal('signUpModal');
+                openModal('accountExistsModal');
+                return; // Stop execution here
+            }
+            throw authError;
+        }
+
         if (!authData.user) throw new Error("Sign up successful, but no user data returned.");
 
         let avatarUrl = null;
@@ -84,9 +92,7 @@ async function handleSignUp(email, password, fullName, avatarFile) {
             
             if (uploadError) throw uploadError;
 
-            const { data: urlData } = supabaseClient.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
+            const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
             avatarUrl = urlData.publicUrl;
         }
 
@@ -99,9 +105,9 @@ async function handleSignUp(email, password, fullName, avatarFile) {
             });
 
         if (profileError) throw profileError;
-
-        showToast('Success! Please check your email to verify your account.');
+        
         closeModal('signUpModal');
+        openModal('signUpSuccessModal');
 
     } catch (error) {
         console.error('Sign up error:', error.message);
@@ -124,15 +130,58 @@ async function handleLogIn(email, password) {
     }
 }
 
-async function handleLogOut() {
+async function handleLogOut(event) {
+    if (event) event.stopPropagation(); // Prevents the settings tab from opening
     try {
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
         appState.isPremium = false;
         updatePremiumUI();
         showToast("You've been logged out.");
+        switchTab('dashboard');
     } catch (error) {
         console.error('Log out error:', error.message);
+        showToast(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function handleProfileUpdate(fullName, avatarFile) {
+    try {
+        const user = appState.currentUser;
+        if (!user) throw new Error("You must be logged in to update your profile.");
+
+        let avatarUrl = user.profile.avatar_url; // Keep old URL by default
+
+        if (avatarFile) {
+            // Upload new avatar
+            const filePath = `public/${user.id}/${Date.now()}_${avatarFile.name}`;
+            const { error: uploadError } = await supabaseClient.storage
+                .from('avatars')
+                .upload(filePath, avatarFile);
+            
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
+            avatarUrl = urlData.publicUrl;
+        }
+
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .update({ full_name: fullName, avatar_url: avatarUrl })
+            .eq('id', user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        
+        // Update local state
+        appState.currentUser.profile = data;
+        updateApp();
+        
+        showToast("Profile updated successfully!");
+
+    } catch (error) {
+        console.error('Profile update error:', error.message);
         showToast(`Error: ${error.message}`, 'error');
     }
 }
@@ -145,17 +194,22 @@ function updateAuthUI() {
     const userEmailEl = document.getElementById('user-email');
     const userAvatarEl = document.getElementById('user-avatar');
     const dashboardHeader = document.getElementById('dashboard-header');
+    const settingsTab = document.querySelector('.nav-item[onclick="switchTab(\'settings\')"]');
 
     if (appState.currentUser && appState.currentUser.profile) {
         const profile = appState.currentUser.profile;
         authButtons.classList.add('hidden');
         userProfile.classList.remove('hidden');
+        if (settingsTab) settingsTab.classList.remove('hidden');
+
         userEmailEl.textContent = appState.currentUser.email;
         userAvatarEl.src = profile.avatar_url || 'https://placehold.co/100x100/e2e8f0/64748b?text=??';
-        dashboardHeader.textContent = `Welcome, ${profile.full_name.split(' ')[0]}!`;
+        dashboardHeader.textContent = `Welcome, ${profile.full_name ? profile.full_name.split(' ')[0] : 'Back'}!`;
     } else {
         authButtons.classList.remove('hidden');
         userProfile.classList.add('hidden');
+        if (settingsTab) settingsTab.classList.add('hidden');
+
         userEmailEl.textContent = '';
         userAvatarEl.src = '';
         dashboardHeader.textContent = `Welcome Back!`;
@@ -174,7 +228,7 @@ function updatePremiumUI() {
             textContent.innerHTML = `
                 <div class="flex items-center justify-center gap-2">
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                     <h3 class="font-bold text-lg">Premium</h3>
+                     <h3 class="font-bold text-lg">Premium Member</h3>
                 </div>`;
         }
         if (iconContent) iconContent.classList.remove('hidden');
@@ -195,6 +249,10 @@ function updatePremiumUI() {
 }
 
 window.switchTab = function(tabId) {
+    if (tabId === 'settings' && !appState.currentUser) {
+        showToast("You must be logged in to view settings.", "error");
+        return;
+    }
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     const activeTab = document.getElementById(tabId);
     if (activeTab) activeTab.classList.remove('hidden');
@@ -343,6 +401,46 @@ function renderDonatedItems() {
             `;
             container.appendChild(itemEl);
         });
+    }
+}
+
+function renderSettingsPage() {
+    if (!appState.currentUser || !appState.currentUser.profile) {
+        // Hide or show a placeholder if the user isn't logged in
+        // (though the tab itself is hidden, this is good practice)
+        return;
+    }
+    const profile = appState.currentUser.profile;
+    
+    document.getElementById('settings-avatar-preview').src = profile.avatar_url || 'https://placehold.co/100x100/e2e8f0/64748b?text=??';
+    document.getElementById('settings-fullname').value = profile.full_name || '';
+    document.getElementById('settings-email').value = appState.currentUser.email;
+
+    const membershipContainer = document.getElementById('membership-status');
+    if(appState.isPremium) {
+        membershipContainer.innerHTML = `
+            <div class="flex items-center gap-4">
+                <div class="bg-green-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-slate-800">Premium Member</p>
+                    <p class="text-sm text-slate-500">You have access to all features.</p>
+                </div>
+            </div>`;
+    } else {
+        membershipContainer.innerHTML = `
+            <div class="flex items-center gap-4 mb-4">
+                 <div class="bg-slate-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M20 12.58A10 10 0 1 1 12 2a10 10 0 0 1 10 10.58Z"/><path d="M12 2v20"/><path d="m18.36 18.36-1.41-1.41"/><path d="m6.05 6.05-1.41-1.41"/><path d="m18.36 5.64-1.41 1.41"/><path d="m6.05 17.95-1.41 1.41"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-slate-800">Free Tier</p>
+                    <p class="text-sm text-slate-500">Basic tracking and marketplace access.</p>
+                </div>
+            </div>
+            <button onclick="openModal('upgradeModal')" class="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">Upgrade to Premium</button>
+        `;
     }
 }
 
@@ -795,11 +893,13 @@ function setupEventListeners() {
         const fullName = form.elements.fullname.value;
         const avatarFile = form.elements.avatar.files[0];
         
-        await handleSignUp(email, password, fullName, avatarFile);
-
-        button.disabled = false;
-        buttonText.classList.remove('hidden');
-        spinner.classList.add('hidden');
+        try {
+            await handleSignUp(email, password, fullName, avatarFile);
+        } finally {
+            button.disabled = false;
+            buttonText.classList.remove('hidden');
+            spinner.classList.add('hidden');
+        }
     });
     
     document.getElementById('avatar-upload')?.addEventListener('change', (e) => {
@@ -827,12 +927,75 @@ function setupEventListeners() {
         const email = form.elements.email.value;
         const password = form.elements.password.value;
         
-        await handleLogIn(email, password);
-
-        button.disabled = false;
-        buttonText.classList.remove('hidden');
-        spinner.classList.add('hidden');
+        try {
+            await handleLogIn(email, password);
+        } finally {
+            button.disabled = false;
+            buttonText.classList.remove('hidden');
+            spinner.classList.add('hidden');
+        }
     });
+    
+    // --- Settings Page Event Listeners ---
+    const profileForm = document.getElementById('profile-form');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+    const settingsFullnameInput = document.getElementById('settings-fullname');
+    const settingsAvatarInput = document.getElementById('settings-avatar-upload');
+    const settingsAvatarPreview = document.getElementById('settings-avatar-preview');
+
+    function toggleProfileEditMode(isEditing) {
+        settingsFullnameInput.disabled = !isEditing;
+        settingsAvatarInput.disabled = !isEditing;
+        settingsFullnameInput.classList.toggle('bg-slate-100', !isEditing);
+        settingsFullnameInput.classList.toggle('bg-white', isEditing);
+        
+        editProfileBtn.classList.toggle('hidden', isEditing);
+        cancelEditBtn.classList.toggle('hidden', !isEditing);
+        saveProfileBtn.classList.toggle('hidden', !isEditing);
+    }
+
+    editProfileBtn?.addEventListener('click', () => toggleProfileEditMode(true));
+    cancelEditBtn?.addEventListener('click', () => {
+        renderSettingsPage(); // Reset form to original data
+        toggleProfileEditMode(false);
+    });
+
+    settingsAvatarInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                settingsAvatarPreview.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    profileForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = saveProfileBtn;
+        const buttonText = button.querySelector('.button-text');
+        const spinner = button.querySelector('.button-spinner');
+
+        button.disabled = true;
+        buttonText.classList.add('hidden');
+        spinner.classList.remove('hidden');
+
+        const fullName = settingsFullnameInput.value;
+        const avatarFile = settingsAvatarInput.files[0];
+        
+        try {
+            await handleProfileUpdate(fullName, avatarFile);
+            toggleProfileEditMode(false);
+        } finally {
+            button.disabled = false;
+            buttonText.classList.remove('hidden');
+            spinner.classList.add('hidden');
+        }
+    });
+
 
     document.getElementById('upgrade-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -842,6 +1005,42 @@ function setupEventListeners() {
     });
 
     document.getElementById('find-dropoff-btn')?.addEventListener('click', openDropOffModal);
+    
+    // --- Password Strength & Visibility ---
+    const passwordInput = document.getElementById('signup-password');
+    const passwordToggle = document.getElementById('toggle-password-visibility');
+
+    passwordInput?.addEventListener('input', (e) => {
+        const value = e.target.value;
+        const checks = {
+            length: value.length >= 8,
+            lowercase: /[a-z]/.test(value),
+            uppercase: /[A-Z]/.test(value),
+            number: /[0-9]/.test(value),
+        };
+        
+        Object.keys(checks).forEach(key => {
+            const el = document.getElementById(`strength-${key}`);
+            const icon = el.querySelector('.icon-status');
+            if (checks[key]) {
+                el.classList.add('password-valid');
+                el.classList.remove('password-invalid');
+                icon.innerHTML = `<path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+            } else {
+                el.classList.remove('password-valid');
+                el.classList.add('password-invalid');
+                icon.innerHTML = `<circle cx="12" cy="12" r="10" fill="currentColor"/>`;
+            }
+        });
+    });
+    
+    passwordToggle?.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        document.getElementById('eye-icon').classList.toggle('hidden', isPassword);
+        document.getElementById('eye-off-icon').classList.toggle('hidden', !isPassword);
+    });
+
     
     window.handleLogOut = handleLogOut;
 }
@@ -889,6 +1088,7 @@ function updateApp() {
     renderDonatedItems();
     updateAuthUI();
     updatePremiumUI();
+    renderSettingsPage();
 }
 
 // Main App Initialization
@@ -911,11 +1111,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 .select(`*`)
                 .eq('id', session.user.id)
                 .single();
-            if (error) {
+            
+            if (error && error.code !== 'PGRST116') { // 'PGRST116' is 'No rows found'
                 console.error("Error fetching profile:", error);
-            } else {
-                userProfile = data;
             }
+            userProfile = data;
+            
             appState.currentUser = { ...session.user, profile: userProfile };
         } else {
             appState.currentUser = null;
