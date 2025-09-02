@@ -111,7 +111,7 @@
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
 
-        #password-strength-meter li {
+        #password-strength-meter li, #signup-password-strength-meter li {
             transition: color 0.3s ease;
         }
         .password-valid {
@@ -166,7 +166,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     <span class="nav-text">Donations</span>
                 </a>
-                <a href="#" onclick="switchTab('settings')" class="nav-item flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                <a href="#" onclick="switchTab('settings')" class="nav-item flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                     <span class="nav-text">Settings</span>
                 </a>
@@ -175,6 +175,18 @@
                  <button id="sidebar-toggle-btn" class="hidden md:flex items-center justify-center w-full h-10 mb-4 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-slate-600 transition-transform"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
                  </button>
+                 <!-- Auth Buttons -->
+                <div id="auth-buttons" class="hidden flex-col gap-2 mb-4">
+                    <button onclick="openModal('loginModal')" class="flex items-center gap-3 justify-center w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        <span class="nav-text">Log In</span>
+                    </button>
+                    <button onclick="openModal('signupModal')" class="flex items-center gap-3 justify-center w-full bg-slate-100 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                        <span class="nav-text">Sign Up</span>
+                    </button>
+                </div>
+                <!-- User Profile -->
                 <div id="user-profile" class="hidden mb-4 p-2 bg-slate-100 rounded-lg cursor-pointer" onclick="switchTab('settings')">
                     <div class="flex items-center gap-3">
                         <img id="user-avatar" src="" alt="User Avatar" class="w-10 h-10 rounded-full bg-slate-300 flex-shrink-0 object-cover">
@@ -461,6 +473,81 @@
     
     <!-- Modals Container -->
 
+    <!-- Log In Modal -->
+    <div id="loginModal" class="modal-backdrop hidden opacity-0">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl m-4 relative">
+            <button type="button" onclick="closeModal('loginModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2 text-center">Welcome Back</h2>
+            <p class="text-slate-500 mb-6 text-center text-sm">Log in to continue managing your kitchen.</p>
+            <div id="login-error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert"></div>
+            <form id="log-in-form">
+                <div class="mb-4">
+                    <label for="login-email" class="block text-sm font-medium text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="login-email" name="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="you@example.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-sm font-medium text-slate-600 mb-1">Password</label>
+                    <input type="password" id="login-password" name="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center disabled:opacity-75">
+                    <span class="button-text">Log In</span>
+                    <svg class="animate-spin h-5 w-5 text-white hidden button-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal-backdrop hidden opacity-0">
+         <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl m-4 relative">
+             <button type="button" onclick="closeModal('signupModal')" class="absolute top-0 right-0 mt-4 mr-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2 text-center">Create Your Account</h2>
+            <p class="text-slate-500 mb-6 text-center text-sm">Join our community and start reducing food waste today.</p>
+            <div id="signup-error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert"></div>
+            <form id="sign-up-form">
+                <div class="mb-4 text-center">
+                    <label for="signup-avatar-upload" class="cursor-pointer group relative inline-block">
+                        <img id="signup-avatar-preview" src="https://placehold.co/100x100/e2e8f0/64748b?text=Upload" class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-200 group-hover:opacity-75 transition-opacity">
+                        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 12h.01"/><path d="M7 2.68a10 10 0 1 1-2.9 14.24"/><path d="M12 2a4 4 0 0 0-4 4v.17a10 10 0 0 1 8 0V6a4 4 0 0 0-4-4z"/></svg>
+                        </div>
+                    </label>
+                    <input type="file" id="signup-avatar-upload" name="avatar" class="hidden" accept="image/png, image/jpeg">
+                </div>
+                <div class="mb-4">
+                    <label for="signup-fullname" class="block text-sm font-medium text-slate-600 mb-1">Full Name</label>
+                    <input type="text" id="signup-fullname" name="fullname" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., Natnael Kornima" required>
+                </div>
+                <div class="mb-4">
+                    <label for="signup-email" class="block text-sm font-medium text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="signup-email" name="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="you@example.com" required>
+                </div>
+                <div class="mb-4">
+                    <label for="signup-password" class="block text-sm font-medium text-slate-600 mb-1">Password</label>
+                    <input type="password" id="signup-password" name="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="••••••••" required>
+                </div>
+                 <ul id="signup-password-strength-meter" class="text-xs space-y-1 mb-6">
+                    <li id="signup-strength-length" class="password-invalid flex items-center gap-2"><svg class="icon-status" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg><span>At least 8 characters</span></li>
+                    <li id="signup-strength-lowercase" class="password-invalid flex items-center gap-2"><svg class="icon-status" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg><span>One lowercase letter</span></li>
+                    <li id="signup-strength-uppercase" class="password-invalid flex items-center gap-2"><svg class="icon-status" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg><span>One uppercase letter</span></li>
+                    <li id="signup-strength-number" class="password-invalid flex items-center gap-2"><svg class="icon-status" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg><span>One number</span></li>
+                </ul>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center disabled:opacity-75">
+                    <span class="button-text">Create Account</span>
+                    <svg class="animate-spin h-5 w-5 text-white hidden button-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+
     <!-- Scan Receipt Modal -->
     <div id="scanReceiptModal" class="modal-backdrop hidden opacity-0">
         <div class="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl m-4 relative">
@@ -697,15 +784,96 @@ function setupResponsiveHandlers() {
 
 
 // --- AUTHENTICATION ---
+async function handleLogIn(e) {
+    e.preventDefault();
+    const form = e.target;
+    const button = form.querySelector('button[type="submit"]');
+    const buttonText = button.querySelector('.button-text');
+    const spinner = button.querySelector('.button-spinner');
+    const errorMessageDiv = document.getElementById('login-error-message');
+
+    button.disabled = true;
+    buttonText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    errorMessageDiv.classList.add('hidden');
+
+    const email = form.elements.email.value;
+    const password = form.elements.password.value;
+    
+    try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        // onAuthStateChange will handle the rest
+        closeModal('loginModal');
+    } catch (error) {
+        console.error('Log in error:', error.message);
+        errorMessageDiv.textContent = error.message;
+        errorMessageDiv.classList.remove('hidden');
+    } finally {
+        button.disabled = false;
+        buttonText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+    }
+}
+
+async function handleSignUp(e) {
+    e.preventDefault();
+    const form = e.target;
+    const button = form.querySelector('button[type="submit"]');
+    const buttonText = button.querySelector('.button-text');
+    const spinner = button.querySelector('.button-spinner');
+    const errorMessageDiv = document.getElementById('signup-error-message');
+
+    button.disabled = true;
+    buttonText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    errorMessageDiv.classList.add('hidden');
+
+    const email = form.elements.email.value;
+    const password = form.elements.password.value;
+    const fullName = form.elements.fullname.value;
+    const avatarFile = form.elements.avatar.files[0];
+
+    try {
+        let avatarUrl = null;
+        if (avatarFile) {
+            const filePath = `public/${Date.now()}_${avatarFile.name}`;
+            const { error: uploadError } = await supabaseClient.storage.from('avatars').upload(filePath, avatarFile);
+            if (uploadError) throw uploadError;
+            const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
+            avatarUrl = urlData.publicUrl;
+        }
+
+        const { error: authError } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: fullName, avatar_url: avatarUrl } }
+        });
+
+        if (authError) throw authError;
+        
+        closeModal('signupModal');
+        showToast("Account created! Welcome to SustainaPlate.");
+        // onAuthStateChange will handle the rest
+    } catch (error) {
+        console.error('Sign up error:', error.message);
+        errorMessageDiv.textContent = error.message;
+        errorMessageDiv.classList.remove('hidden');
+    } finally {
+        button.disabled = false;
+        buttonText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+    }
+}
+
 async function handleLogOut(event) {
     if (event) event.stopPropagation(); // Prevents the settings tab from opening
     try {
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
         appState.isPremium = false;
-        updatePremiumUI();
+        // onAuthStateChange handles UI update
         showToast("You've been logged out.");
-        window.location.href = new URL('login.html', window.location.origin).href;
     } catch (error) {
         console.error('Log out error:', error.message);
         showToast(`Error: ${error.message}`, 'error');
@@ -717,16 +885,13 @@ async function handleProfileUpdate(fullName, avatarFile) {
         const user = appState.currentUser;
         if (!user) throw new Error("You must be logged in to update your profile.");
 
-        let avatarUrl = user.profile.avatar_url; // Keep old URL by default
+        let avatarUrl = user.profile.avatar_url;
 
         if (avatarFile) {
-            // Upload new avatar
             const filePath = `public/${user.id}/${Date.now()}_${avatarFile.name}`;
             const { error: uploadError } = await supabaseClient.storage
                 .from('avatars')
-                .upload(filePath, avatarFile, {
-                    upsert: true // Overwrite if a file with the same name exists
-                });
+                .upload(filePath, avatarFile, { upsert: true });
             
             if (uploadError) throw uploadError;
 
@@ -743,10 +908,8 @@ async function handleProfileUpdate(fullName, avatarFile) {
 
         if (error) throw error;
         
-        // Update local state
         appState.currentUser.profile = data;
         updateApp();
-        
         showToast("Profile updated successfully!");
 
     } catch (error) {
@@ -759,6 +922,7 @@ async function handleProfileUpdate(fullName, avatarFile) {
 // --- UI & RENDERING FUNCTIONS ---
 function updateAuthUI() {
     const userProfile = document.getElementById('user-profile');
+    const authButtons = document.getElementById('auth-buttons');
     const userEmailEl = document.getElementById('user-email');
     const userAvatarEl = document.getElementById('user-avatar');
     const dashboardHeader = document.getElementById('dashboard-header');
@@ -767,18 +931,20 @@ function updateAuthUI() {
     if (appState.currentUser && appState.currentUser.profile) {
         const profile = appState.currentUser.profile;
         userProfile.classList.remove('hidden');
-        if (settingsTab) settingsTab.classList.remove('hidden');
+        authButtons.classList.add('hidden');
+        if(settingsTab) settingsTab.classList.remove('hidden');
 
         userEmailEl.textContent = appState.currentUser.email;
         userAvatarEl.src = profile.avatar_url || 'https://placehold.co/100x100/e2e8f0/64748b?text=??';
         dashboardHeader.textContent = `Welcome, ${profile.full_name ? profile.full_name.split(' ')[0] : 'Back'}!`;
     } else {
         userProfile.classList.add('hidden');
-        if (settingsTab) settingsTab.classList.add('hidden');
-
+        authButtons.classList.remove('hidden');
+        if(settingsTab) settingsTab.classList.add('hidden');
+        
+        dashboardHeader.textContent = `Welcome to SustainaPlate!`;
         userEmailEl.textContent = '';
         userAvatarEl.src = '';
-        dashboardHeader.textContent = `Welcome Back!`;
     }
 }
 
@@ -972,8 +1138,6 @@ function renderDonatedItems() {
 
 function renderSettingsPage() {
     if (!appState.currentUser || !appState.currentUser.profile) {
-        // Hide or show a placeholder if the user isn't logged in
-        // (though the tab itself is hidden, this is good practice)
         return;
     }
     const profile = appState.currentUser.profile;
@@ -1422,6 +1586,7 @@ function setupFileUploadHandlers() {
 
 // --- INITIALIZATION ---
 function setupEventListeners() {
+    // Main app forms
     document.getElementById('add-item-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = e.target.elements['item-name'].value;
@@ -1441,6 +1606,41 @@ function setupEventListeners() {
         addMarketplaceItem(name, description, imageUrl);
         closeModal('shareFoodModal');
         e.target.reset();
+    });
+
+    // Auth forms in modals
+    document.getElementById('log-in-form')?.addEventListener('submit', handleLogIn);
+    document.getElementById('sign-up-form')?.addEventListener('submit', handleSignUp);
+
+    // Avatar Preview for Sign Up Modal
+    document.getElementById('signup-avatar-upload').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                document.getElementById('signup-avatar-preview').src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Password Strength for Sign Up Modal
+    document.getElementById('signup-password').addEventListener('input', (e) => {
+        const value = e.target.value;
+        const checks = { length: value.length >= 8, lowercase: /[a-z]/.test(value), uppercase: /[A-Z]/.test(value), number: /[0-9]/.test(value) };
+        Object.keys(checks).forEach(key => {
+            const el = document.getElementById(`signup-strength-${key}`);
+            const icon = el.querySelector('.icon-status');
+            if (checks[key]) {
+                el.classList.add('password-valid');
+                el.classList.remove('password-invalid');
+                icon.innerHTML = `<path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+            } else {
+                el.classList.remove('password-valid');
+                el.classList.add('password-invalid');
+                icon.innerHTML = `<circle cx="12" cy="12" r="10" fill="currentColor"/>`;
+            }
+        });
     });
     
     // --- Settings Page Event Listeners ---
@@ -1574,7 +1774,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initChart();
 
-    // Function to fetch profile with retries to handle trigger delay
     async function fetchProfileWithRetries(userId, retries = 5, delay = 500) {
         for (let i = 0; i < retries; i++) {
             const { data, error } = await supabaseClient
@@ -1583,47 +1782,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 .eq('id', userId)
                 .single();
 
-            if (error && error.code !== 'PGRST116') { // 'PGRST116' is 'No rows found'
+            if (error && error.code !== 'PGRST116') {
                 console.error("Error fetching profile:", error);
-                return null; // A real error occurred
+                return null;
             }
-
-            if (data) {
-                return data; // Profile found!
-            }
-
-            // Profile not found, wait and retry
-            if (i < retries - 1) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
+            if (data) return data;
+            if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, delay));
         }
         console.warn("Could not find profile after multiple retries.");
-        return null; // Profile not found after all retries
+        return null;
     }
-
 
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
         const loadingOverlay = document.getElementById('loading-overlay');
-        let userProfile = null;
-
+        
         if (session) {
-            // Use the new function to fetch the profile, which handles the delay
-            userProfile = await fetchProfileWithRetries(session.user.id);
-            appState.currentUser = { ...session.user, profile: userProfile };
+            const userProfile = await fetchProfileWithRetries(session.user.id);
+            if (userProfile) {
+                appState.currentUser = { ...session.user, profile: userProfile };
+            } else {
+                console.warn(`User profile for ${session.user.id} not found. Using fallback.`);
+                showToast("Could not load all profile data.", "error");
+                const fallbackProfile = {
+                    id: session.user.id,
+                    full_name: session.user.email.split('@')[0],
+                    avatar_url: null
+                };
+                appState.currentUser = { ...session.user, profile: fallbackProfile };
+            }
         } else {
             appState.currentUser = null;
-        }
-        
-        // Hide loading screen only after the check is complete
-        if (loadingOverlay) {
-            loadingOverlay.classList.add('opacity-0');
-            setTimeout(() => loadingOverlay.style.display = 'none', 500);
+            openModal('loginModal'); // Prompt login if not in a session
         }
 
         updateApp();
-
-        if (session && !userProfile) {
-            showToast('Could not load your profile. Please try logging in again.', 'error');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('opacity-0');
+            setTimeout(() => loadingOverlay.style.display = 'none', 500);
         }
     });
 });
@@ -1631,4 +1826,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
