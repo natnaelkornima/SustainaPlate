@@ -64,7 +64,7 @@ Below are key screenshots showcasing SustainaPlate's features:
 ### Community Marketplace
 *Share surplus food with neighbors to reduce waste.*
 
-![Community Marketplace](screenshots/community-marketplace.png)
+![Community Marketplace](screenshots/community-marketplace)
 
 ### Waste Analytics
 *Visualize waste patterns with interactive charts and AI-driven insights.*
